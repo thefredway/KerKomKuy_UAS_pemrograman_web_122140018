@@ -1,74 +1,53 @@
-import { Card, Form, Button, ListGroup, Badge, Alert } from "react-bootstrap";
-import { useState, useContext } from "react";
-import { AuthContext } from "../context/AuthContext";
+import { useParams, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Card, ListGroup, Badge, Alert, Button } from "react-bootstrap";
 
 export default function Grup() {
-  const { user } = useContext(AuthContext);
-  const [pesan, setPesan] = useState("");
-  const [chat, setChat] = useState([
-    {
-      id: 1,
-      pengirim: "122140018",
-      teks: "Halo, jadwal kita hari Rabu jam 10:00 ya!",
-    },
-    { id: 2, pengirim: "122140019", teks: "Siap, sudah saya catat" },
-  ]);
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const [grup, setGrup] = useState(null);
 
-  const handleKirimPesan = (e) => {
-    e.preventDefault();
-    if (!pesan.trim()) return;
+  useEffect(() => {
+    const list = JSON.parse(localStorage.getItem("grup_list")) || [];
+    const found = list.find((g) => g.id.toString() === id);
+    setGrup(found);
+  }, [id]);
 
-    setChat([
-      ...chat,
-      {
-        id: Date.now(),
-        pengirim: user.nim,
-        teks: pesan,
-      },
-    ]);
-    setPesan("");
-  };
+  if (!grup) return <Alert variant="warning">Grup tidak ditemukan.</Alert>;
 
   return (
     <div className="p-4">
+      <h3>Grup ID: {id}</h3>
       <Card>
-        <Card.Header className="d-flex justify-content-between align-items-center">
-          <h4>Grup Diskusi KerKomKuy</h4>
-          <Badge bg="success">Online</Badge>
-        </Card.Header>
-        <Card.Body style={{ height: "500px", overflowY: "auto" }}>
-          <ListGroup variant="flush">
-            {chat.map((msg) => (
-              <ListGroup.Item
-                key={msg.id}
-                className={msg.pengirim === user.nim ? "text-end" : ""}
-              >
-                <small className="text-muted d-block">
-                  {msg.pengirim === user.nim ? "Anda" : msg.pengirim}
-                </small>
-                <Alert
-                  variant={msg.pengirim === user.nim ? "primary" : "light"}
-                >
-                  {msg.teks}
-                </Alert>
+        <Card.Body>
+          <h5>Anggota:</h5>
+          <ListGroup className="mb-3">
+            {grup.anggota.map((a, i) => (
+              <ListGroup.Item key={i}>{a.nim}</ListGroup.Item>
+            ))}
+          </ListGroup>
+
+          <h5>Jadwal Pilihan:</h5>
+          <ListGroup>
+            {grup.jadwal.map((j, i) => (
+              <ListGroup.Item key={i}>
+                <Badge bg="info" className="me-2">
+                  🕒
+                </Badge>{" "}
+                {j}
               </ListGroup.Item>
             ))}
           </ListGroup>
-        </Card.Body>
-        <Card.Footer>
-          <Form onSubmit={handleKirimPesan} className="d-flex gap-2">
-            <Form.Control
-              as="textarea"
-              rows={1}
-              value={pesan}
-              onChange={(e) => setPesan(e.target.value)}
-              placeholder="Ketik pesan..."
-            />
-            <Button variant="primary" type="submit">
-              Kirim
+
+          <div className="text-end mt-3">
+            <Button
+              variant="primary"
+              onClick={() => navigate(`/grup/${id}/diskusi`)}
+            >
+              Masuk Diskusi
             </Button>
-          </Form>
-        </Card.Footer>
+          </div>
+        </Card.Body>
       </Card>
     </div>
   );

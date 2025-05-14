@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 export default function Register() {
   const [nim, setNim] = useState("");
   const [password, setPassword] = useState("");
+  const [namaLengkap, setNamaLengkap] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const navigate = useNavigate();
@@ -24,7 +25,7 @@ export default function Register() {
       setError("NIM sudah terdaftar");
       return;
     }
-
+    users.push({ nim, password, namaLengkap });
     users.push({ nim, password });
     localStorage.setItem("users", JSON.stringify(users));
     setSuccess(true);
@@ -41,6 +42,15 @@ export default function Register() {
             <Alert variant="success">Berhasil daftar! Redirect...</Alert>
           )}
           <Form onSubmit={handleRegister}>
+            <Form.Group className="mb-3">
+              <Form.Label>Nama Lengkap</Form.Label>
+              <Form.Control
+                type="text"
+                value={namaLengkap}
+                onChange={(e) => setNamaLengkap(e.target.value)}
+                required
+              />
+            </Form.Group>
             <Form.Group className="mb-3">
               <Form.Label>NIM</Form.Label>
               <Form.Control

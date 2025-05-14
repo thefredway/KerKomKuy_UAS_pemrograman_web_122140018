@@ -7,6 +7,9 @@ import Dashboard from "./pages/Dashboard";
 import Grup from "./pages/Grup";
 import Footer from "./components/Footer";
 import AppNavbar from "./components/Navbar";
+import ListGrup from "./pages/ListGrup";
+import GrupDiskusi from "./pages/GrupDiskusi";
+
 function App() {
   console.log("App component rendered"); // Log tambahan
 
@@ -20,7 +23,9 @@ function App() {
             <Route path="/register" element={<Register />} />
             <Route element={<ProtectedRoute />}>
               <Route path="/" element={<Dashboard />} />
-              <Route path="/grup" element={<Grup />} />
+              <Route path="/list-grup" element={<ListGrup />} />
+              <Route path="/grup/:id" element={<Grup />} />
+              <Route path="/grup/:id/diskusi" element={<GrupDiskusi />} />
             </Route>
           </Routes>
         </main>

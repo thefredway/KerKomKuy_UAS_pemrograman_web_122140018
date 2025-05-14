@@ -2,11 +2,13 @@ import { useState, useEffect, useContext } from "react";
 import { Button, Card, Form, Table, Alert, Col, Row } from "react-bootstrap";
 import { AuthContext } from "../context/AuthContext";
 import { getJadwal, cariJadwalKosong } from "../api/api.js";
+import { useNavigate } from "react-router-dom";
 
 export default function Dashboard() {
   console.log("Dashboard component rendered"); // Log tambahan
 
   const { user } = useContext(AuthContext);
+  const navigate = useNavigate();
   const [jadwal, setJadwal] = useState([]);
   const [searchNim, setSearchNim] = useState("");
   const [anggota, setAnggota] = useState([]);
@@ -66,10 +68,14 @@ export default function Dashboard() {
 
   return (
     <div className="p-4">
-      <h1>Selamat Datang di Dashboard</h1>
-      {user ? <p>Halo, {user.nim}!</p> : <p>Loading user data...</p>}
+      <h1>Selamat Datang di KerKomKuy</h1>
+      {user ? (
+        <p>Semangat Kerkom, {user.namaLengkap}!</p>
+      ) : (
+        <p>Loading user data...</p>
+      )}
 
-      <h2>Dashboard KerKomKuy</h2>
+      <h2>Jadwal Kuliah</h2>
 
       {/* Form Input Jadwal */}
       <Card className="mb-4">
@@ -209,12 +215,19 @@ export default function Dashboard() {
               disabled={terpilih.length === 0}
               variant="primary"
               onClick={() => {
-                // simpan ke localStorage lalu redirect
-                localStorage.setItem(
-                  "jadwal_terpilih",
-                  JSON.stringify(terpilih)
-                );
-                window.location.href = "/grup";
+                const existingGrup =
+                  JSON.parse(localStorage.getItem("grup_list")) || [];
+
+                const newGrup = {
+                  id: Date.now(),
+                  anggota: anggota,
+                  jadwal: terpilih,
+                };
+
+                const updated = [...existingGrup, newGrup];
+                localStorage.setItem("grup_list", JSON.stringify(updated));
+
+                navigate(`/grup/${newGrup.id}`);
               }}
             >
               Buat Grup

@@ -23,7 +23,7 @@ export function AuthProvider({ children }) {
     const users = JSON.parse(localStorage.getItem("users")) || [];
     const match = users.find((u) => u.nim === nim && u.password === password);
     if (match) {
-      const userData = { nim };
+      const userData = { nim, namaLengkap: match.namaLengkap };
       setUser(userData);
       localStorage.setItem("user", JSON.stringify(userData));
       navigate("/");
