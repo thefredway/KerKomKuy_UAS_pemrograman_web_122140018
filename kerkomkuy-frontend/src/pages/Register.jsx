@@ -31,12 +31,16 @@ export default function Register() {
     setSuccess(true);
     setTimeout(() => navigate("/login"), 2000);
   };
-
   return (
     <div className="d-flex justify-content-center align-items-center vh-100">
-      <Card style={{ width: "400px" }}>
+      <Card
+        style={{ width: "400px", backgroundColor: "white" }}
+        className="p-3 border-0 auth-card"
+      >
         <Card.Body>
-          <h3 className="text-center mb-4">Register Akun</h3>
+          <h3 className="text-center mb-4 fw-semibold text-primary">
+            Buat Akun
+          </h3>
           {error && <Alert variant="danger">{error}</Alert>}
           {success && (
             <Alert variant="success">Berhasil daftar! Redirect...</Alert>
@@ -48,7 +52,9 @@ export default function Register() {
                 type="text"
                 value={namaLengkap}
                 onChange={(e) => setNamaLengkap(e.target.value)}
+                placeholder="Masukkan Nama"
                 required
+                className="py-2"
               />
             </Form.Group>
             <Form.Group className="mb-3">
@@ -57,7 +63,9 @@ export default function Register() {
                 type="text"
                 value={nim}
                 onChange={(e) => setNim(e.target.value)}
+                placeholder="Masukkan NIM"
                 required
+                className="py-2"
               />
             </Form.Group>
             <Form.Group className="mb-3">
@@ -66,10 +74,12 @@ export default function Register() {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                placeholder="Masukkan Password"
                 required
+                className="py-2"
               />
             </Form.Group>
-            <Button type="submit" className="w-100">
+            <Button type="submit" className="w-100 py-2">
               Daftar
             </Button>
           </Form>

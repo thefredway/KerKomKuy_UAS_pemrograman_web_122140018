@@ -18,12 +18,16 @@ export default function Login() {
       setError("NIM atau Password salah!");
     }
   };
-
   return (
     <div className="d-flex justify-content-center align-items-center vh-100">
-      <Card style={{ width: "400px" }}>
+      <Card
+        style={{ width: "400px", backgroundColor: "white" }}
+        className="p-3 border-0 auth-card"
+      >
         <Card.Body>
-          <h3 className="text-center mb-4">Login KerKomKuy</h3>
+          <h3 className="text-center mb-4 fw-semibold text-primary">
+            Masuk KerKomKuy
+          </h3>
           {error && <Alert variant="danger">{error}</Alert>}
           <Form onSubmit={handleSubmit}>
             <Form.Group className="mb-3">
@@ -34,6 +38,7 @@ export default function Login() {
                 onChange={(e) => setNim(e.target.value)}
                 placeholder="Masukkan NIM"
                 required
+                className="py-2"
               />
             </Form.Group>
             <Form.Group className="mb-3">
@@ -44,14 +49,14 @@ export default function Login() {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Masukkan Password"
                 required
+                className="py-2"
               />
             </Form.Group>
-            <Button variant="primary" type="submit" className="w-100">
+            <Button variant="primary" type="submit" className="w-100 py-2">
               Login
             </Button>
           </Form>
 
-          {/* Link ke register */}
           <div className="text-center mt-3">
             <small>
               Belum punya akun? <Link to="/register">Daftar di sini</Link>
