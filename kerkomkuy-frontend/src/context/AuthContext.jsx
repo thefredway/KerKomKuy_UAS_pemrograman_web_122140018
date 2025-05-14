@@ -20,10 +20,12 @@ export function AuthProvider({ children }) {
   }, []);
 
   const login = (nim, password) => {
-    if (nim === "1" && password === "kerkom123") {
+    const users = JSON.parse(localStorage.getItem("users")) || [];
+    const match = users.find((u) => u.nim === nim && u.password === password);
+    if (match) {
       const userData = { nim };
       setUser(userData);
-      localStorage.setItem("user", JSON.stringify(userData)); // Simpan user ke localStorage
+      localStorage.setItem("user", JSON.stringify(userData));
       navigate("/");
       return true;
     }

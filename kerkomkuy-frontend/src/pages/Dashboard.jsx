@@ -17,6 +17,7 @@ export default function Dashboard() {
     jam_selesai: "",
     matkul: "",
   });
+  const [terpilih, setTerpilih] = useState([]); // State untuk jadwal terpilih
 
   // Load jadwal saat komponen mount
   useEffect(() => {
@@ -185,11 +186,39 @@ export default function Dashboard() {
         <Card>
           <Card.Body>
             <h5>Jadwal Kosong Bersama:</h5>
-            {jadwalKosong.map((slot, index) => (
-              <Alert key={index} variant="light" className="mt-2">
-                🕒 {slot}
-              </Alert>
-            ))}
+            <Form>
+              {jadwalKosong.map((slot, index) => (
+                <Form.Check
+                  type="checkbox"
+                  label={slot}
+                  key={index}
+                  id={`checkbox-${index}`}
+                  checked={terpilih.includes(slot)}
+                  onChange={(e) => {
+                    if (e.target.checked) {
+                      setTerpilih([...terpilih, slot]);
+                    } else {
+                      setTerpilih(terpilih.filter((s) => s !== slot));
+                    }
+                  }}
+                />
+              ))}
+            </Form>
+            <Button
+              className="mt-3"
+              disabled={terpilih.length === 0}
+              variant="primary"
+              onClick={() => {
+                // simpan ke localStorage lalu redirect
+                localStorage.setItem(
+                  "jadwal_terpilih",
+                  JSON.stringify(terpilih)
+                );
+                window.location.href = "/grup";
+              }}
+            >
+              Buat Grup
+            </Button>
           </Card.Body>
         </Card>
       )}
