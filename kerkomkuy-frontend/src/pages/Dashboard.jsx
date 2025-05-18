@@ -49,10 +49,9 @@ export default function Dashboard() {
       matkul: "",
     });
   };
-
   // Handle cari jadwal kosong
   const handleCariJadwal = () => {
-    const anggotaIds = anggota.map((a) => a.id);
+    const anggotaIds = anggota.map((a) => a.nim); // Use nim instead of id
     cariJadwalKosong(anggotaIds).then((res) => {
       setJadwalKosong(res.data.jadwal_kosong);
     });
@@ -60,8 +59,8 @@ export default function Dashboard() {
 
   // Handle ajak anggota
   const handleAjakAnggota = () => {
-    if (searchNim) {
-      setAnggota([...anggota, { id: searchNim, nim: searchNim }]);
+    if (searchNim && !anggota.some((a) => a.nim === searchNim)) {
+      setAnggota([...anggota, { nim: searchNim }]);
       setSearchNim("");
     }
   };
@@ -209,7 +208,7 @@ export default function Dashboard() {
                   }}
                 />
               ))}
-            </Form>
+            </Form>{" "}
             <Button
               className="mt-3"
               disabled={terpilih.length === 0}
@@ -218,9 +217,22 @@ export default function Dashboard() {
                 const existingGrup =
                   JSON.parse(localStorage.getItem("grup_list")) || [];
 
+                // Make sure current user is included in the group members
+                let allMembers = [...anggota];
+
+                // Check if current user is already in the members list
+                const isCurrentUserIncluded = allMembers.some(
+                  (member) => member.nim === user.nim
+                );
+
+                // If not, add the current user to the members list
+                if (!isCurrentUserIncluded) {
+                  allMembers.push({ nim: user.nim });
+                }
+
                 const newGrup = {
                   id: Date.now(),
-                  anggota: anggota,
+                  anggota: allMembers,
                   jadwal: terpilih,
                 };
 
