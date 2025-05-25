@@ -64,23 +64,21 @@ export default function Dashboard() {
       setSearchNim("");
     }
   };
-
   return (
     <div className="p-4">
-      <h1>Selamat Datang di KerKomKuy</h1>
+      <h1 className="fw-bold mb-3" style={{ color: "#36586b" }}>
+        Selamat Datang di KerKomKuy
+      </h1>
       {user ? (
-        <p>Semangat Kerkom, {user.namaLengkap}!</p>
+        <p className="mb-4">Semangat Kerkom, {user.namaLengkap}!</p>
       ) : (
-        <p>Loading user data...</p>
+        <p className="mb-4">Loading user data...</p>
       )}
-
-      <h2>Jadwal Kuliah</h2>
-
-      {/* Form Input Jadwal */}
-      <Card className="mb-4">
+      <h2>Jadwal Kuliah</h2> {/* Form Input Jadwal */}
+      <Card className="mb-4 p-3 bg-white border-0 shadow-sm">
         <Card.Body>
           <Form onSubmit={handleSubmitJadwal}>
-            <Row>
+            <Row className="g-2">
               <Col md={3}>
                 <Form.Select
                   name="hari"
@@ -126,7 +124,7 @@ export default function Dashboard() {
                 />
               </Col>
               <Col md={2}>
-                <Button type="submit" variant="primary">
+                <Button type="submit" variant="primary" className="w-100">
                   Tambah
                 </Button>
               </Col>
@@ -134,7 +132,6 @@ export default function Dashboard() {
           </Form>
         </Card.Body>
       </Card>
-
       {/* Daftar Jadwal */}
       <Table striped bordered className="mb-4">
         <thead>
@@ -155,12 +152,11 @@ export default function Dashboard() {
             </tr>
           ))}
         </tbody>
-      </Table>
-
+      </Table>{" "}
       {/* Manajemen Kelompok */}
-      <Card className="mb-4">
+      <Card className="mb-4 p-3 bg-white border-0 shadow-sm">
         <Card.Body>
-          <h5 className="mb-3">Tambah Anggota Kelompok</h5>
+          <h5 className="mb-3 fw-semibold">Tambah Anggota Kelompok</h5>
           <div className="d-flex mb-3">
             <Form.Control
               type="text"
@@ -169,10 +165,12 @@ export default function Dashboard() {
               onChange={(e) => setSearchNim(e.target.value)}
               className="me-2"
             />
-            <Button onClick={handleAjakAnggota}>Ajak Kerkom</Button>
+            <Button onClick={handleAjakAnggota} variant="primary">
+              Ajak Kerkom
+            </Button>
           </div>
           {anggota.length > 0 && (
-            <Alert variant="info">
+            <Alert variant="info" className="rounded-pill px-4 py-2">
               Anggota Terpilih: {anggota.map((a) => a.nim).join(", ")}
             </Alert>
           )}
@@ -184,13 +182,12 @@ export default function Dashboard() {
             Cari Jadwal Kosong
           </Button>
         </Card.Body>
-      </Card>
-
+      </Card>{" "}
       {/* Hasil Jadwal Kosong */}
       {jadwalKosong.length > 0 && (
-        <Card>
+        <Card className="p-3 bg-white border-0 shadow-sm">
           <Card.Body>
-            <h5>Jadwal Kosong Bersama:</h5>
+            <h5 className="fw-semibold">Jadwal Kosong Bersama</h5>
             <Form>
               {jadwalKosong.map((slot, index) => (
                 <Form.Check
@@ -212,7 +209,8 @@ export default function Dashboard() {
             <Button
               className="mt-3"
               disabled={terpilih.length === 0}
-              variant="primary"              onClick={() => {
+              variant="primary"
+              onClick={() => {
                 const existingGrup =
                   JSON.parse(localStorage.getItem("grup_list")) || [];
 
@@ -223,7 +221,8 @@ export default function Dashboard() {
                 };
 
                 // Simpan ajakan ke masing-masing anggota
-                const pending = JSON.parse(localStorage.getItem("pending_invitations")) || {};
+                const pending =
+                  JSON.parse(localStorage.getItem("pending_invitations")) || {};
                 anggota.forEach((a) => {
                   if (!pending[a.nim]) pending[a.nim] = [];
                   pending[a.nim].push({
@@ -232,7 +231,10 @@ export default function Dashboard() {
                     jadwal: terpilih,
                   });
                 });
-                localStorage.setItem("pending_invitations", JSON.stringify(pending));
+                localStorage.setItem(
+                  "pending_invitations",
+                  JSON.stringify(pending)
+                );
 
                 const updated = [...existingGrup, newGrup];
                 localStorage.setItem("grup_list", JSON.stringify(updated));

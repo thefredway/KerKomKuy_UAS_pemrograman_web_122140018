@@ -1,3 +1,4 @@
+/* === RESET === */
 html,
 body,
 #root {
@@ -26,32 +27,64 @@ body {
   flex: 1;
 }
 
+/* === FOOTER === */
 footer {
   width: 100%;
-  background-color: #1a1a1a;
+  background-color: #1e2a33 !important;
   color: white;
   text-align: center;
   padding: 1rem 0;
   margin-top: auto;
+  font-size: 0.9rem;
 }
 
-/* Custom Card and Button Styles */
+/* === CARD & FORM STYLING === */
 .card {
-  border-radius: 1.25rem !important;
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08) !important;
+  border-radius: 1rem !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05) !important;
+  border: none !important;
 }
 
-/* Specific style for auth cards (login/register) */
 .auth-card {
   box-shadow: 0 16px 32px rgba(0, 0, 0, 0.15) !important;
   transition: all 0.3s ease;
 }
 
+.form-control,
+.form-select {
+  border-radius: 2rem;
+  padding: 0.6rem 1.1rem;
+  font-size: 0.95rem;
+}
+
+/* === BUTTON STYLE === */
 .btn-primary {
   background-color: #547792;
   border: none;
+  border-radius: 2rem;
 }
 
 .btn-primary:hover {
   background-color: #3f5c71;
+}
+
+.btn-success {
+  border-radius: 2rem;
+}
+
+.btn-outline-light {
+  border-radius: 2rem !important;
+  padding: 0.4rem 1.2rem !important;
+}
+
+/* === NAVBAR === */
+.navbar-dark {
+  background-color: #1e2a33 !important;
+}
+
+/* === BADGE === */
+.badge {
+  font-size: 0.75rem;
+  padding: 0.35em 0.6em;
+  border-radius: 1rem;
 }
