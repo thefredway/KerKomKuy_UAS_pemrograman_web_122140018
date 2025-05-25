@@ -212,29 +212,27 @@ export default function Dashboard() {
             <Button
               className="mt-3"
               disabled={terpilih.length === 0}
-              variant="primary"
-              onClick={() => {
+              variant="primary"              onClick={() => {
                 const existingGrup =
                   JSON.parse(localStorage.getItem("grup_list")) || [];
 
-                // Make sure current user is included in the group members
-                let allMembers = [...anggota];
-
-                // Check if current user is already in the members list
-                const isCurrentUserIncluded = allMembers.some(
-                  (member) => member.nim === user.nim
-                );
-
-                // If not, add the current user to the members list
-                if (!isCurrentUserIncluded) {
-                  allMembers.push({ nim: user.nim });
-                }
-
                 const newGrup = {
                   id: Date.now(),
-                  anggota: allMembers,
+                  anggota: anggota,
                   jadwal: terpilih,
                 };
+
+                // Simpan ajakan ke masing-masing anggota
+                const pending = JSON.parse(localStorage.getItem("pending_invitations")) || {};
+                anggota.forEach((a) => {
+                  if (!pending[a.nim]) pending[a.nim] = [];
+                  pending[a.nim].push({
+                    grup_id: newGrup.id,
+                    dari: user.nim,
+                    jadwal: terpilih,
+                  });
+                });
+                localStorage.setItem("pending_invitations", JSON.stringify(pending));
 
                 const updated = [...existingGrup, newGrup];
                 localStorage.setItem("grup_list", JSON.stringify(updated));

@@ -18,6 +18,9 @@ export default function AppNavbar() {
           <Button as={Link} to="/list-grup" variant="outline-light">
             Grup
           </Button>
+          <Button as={Link} to="/ajakan" variant="outline-light">
+            Ajakan
+          </Button>
         </Nav>
         <Nav className="ms-auto">
           <Button variant="outline-light" onClick={logout}>

@@ -9,6 +9,7 @@ import Footer from "./components/Footer";
 import AppNavbar from "./components/Navbar";
 import ListGrup from "./pages/ListGrup";
 import GrupDiskusi from "./pages/GrupDiskusi";
+import Ajakan from "./pages/Ajakan";
 
 function App() {
   console.log("App component rendered"); // Log tambahan
@@ -26,6 +27,7 @@ function App() {
               <Route path="/list-grup" element={<ListGrup />} />
               <Route path="/grup/:id" element={<Grup />} />
               <Route path="/grup/:id/diskusi" element={<GrupDiskusi />} />
+              <Route path="/ajakan" element={<Ajakan />} />
             </Route>
           </Routes>
         </main>
