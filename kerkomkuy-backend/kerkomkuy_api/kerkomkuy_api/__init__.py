@@ -2,6 +2,7 @@ from pyramid.config import Configurator
 from .views.user import *
 from .views.auth import *
 from .views.jadwal import *
+from .views.grup import *
 
 def main(global_config, **settings):    
     with Configurator(settings=settings) as config:
@@ -18,6 +19,10 @@ def main(global_config, **settings):
 
         config.add_route('jadwal', '/api/jadwal')              # GET all / POST
         config.add_route('jadwal_detail', '/api/jadwal/{id}')  # GET one / PUT / DELETE
+
+        config.add_route('grup', '/api/grup')              # GET all / POST
+        config.add_route('grup_detail', '/api/grup/{id}')  # GET / DELETE
         
+
         config.scan()
     return config.make_wsgi_app()
