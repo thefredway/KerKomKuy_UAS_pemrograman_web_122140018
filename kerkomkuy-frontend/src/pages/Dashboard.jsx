@@ -3,10 +3,9 @@ import { Button, Card, Form, Table, Alert, Col, Row } from "react-bootstrap";
 import { AuthContext } from "../context/AuthContext";
 import { getJadwal, cariJadwalKosong } from "../api/api.js";
 import { useNavigate } from "react-router-dom";
+import { FaTrash } from "react-icons/fa"; // Ikon hapus
 
 export default function Dashboard() {
-  console.log("Dashboard component rendered"); // Log tambahan
-
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
   const [jadwal, setJadwal] = useState([]);
@@ -19,29 +18,22 @@ export default function Dashboard() {
     jam_selesai: "",
     matkul: "",
   });
-  const [terpilih, setTerpilih] = useState([]); // State untuk jadwal terpilih
+  const [terpilih, setTerpilih] = useState([]);
 
-  // Load jadwal saat komponen mount
   useEffect(() => {
     if (user) {
       getJadwal().then((res) => setJadwal(res.data.jadwal));
     }
   }, [user]);
 
-  // Log state user dan jadwal
-  useEffect(() => {
-    console.log("Dashboard user:", user);
-    console.log("Jadwal state:", jadwal);
-  }, [user, jadwal]);
-
-  // Handle form input jadwal
   const handleInputChange = (e) => {
     setFormJadwal({ ...formJadwal, [e.target.name]: e.target.value });
   };
 
   const handleSubmitJadwal = (e) => {
     e.preventDefault();
-    setJadwal([...jadwal, { ...formJadwal, id: Date.now() }]);
+    const newJadwal = { ...formJadwal, id: Date.now() };
+    setJadwal([...jadwal, newJadwal]);
     setFormJadwal({
       hari: "Senin",
       jam_mulai: "",
@@ -49,21 +41,26 @@ export default function Dashboard() {
       matkul: "",
     });
   };
-  // Handle cari jadwal kosong
+
+  const handleHapusJadwal = (id) => {
+    const filtered = jadwal.filter((item) => item.id !== id);
+    setJadwal(filtered);
+  };
+
   const handleCariJadwal = () => {
-    const anggotaIds = anggota.map((a) => a.nim); // Use nim instead of id
+    const anggotaIds = anggota.map((a) => a.nim);
     cariJadwalKosong(anggotaIds).then((res) => {
       setJadwalKosong(res.data.jadwal_kosong);
     });
   };
 
-  // Handle ajak anggota
   const handleAjakAnggota = () => {
     if (searchNim && !anggota.some((a) => a.nim === searchNim)) {
       setAnggota([...anggota, { nim: searchNim }]);
       setSearchNim("");
     }
   };
+
   return (
     <div className="p-4">
       <h1 className="fw-bold mb-3" style={{ color: "#36586b" }}>
@@ -74,7 +71,8 @@ export default function Dashboard() {
       ) : (
         <p className="mb-4">Loading user data...</p>
       )}
-      <h2>Jadwal Kuliah</h2> {/* Form Input Jadwal */}
+
+      <h2>Jadwal Kuliah</h2>
       <Card className="mb-4 p-3 bg-white border-0 shadow-sm">
         <Card.Body>
           <Form onSubmit={handleSubmitJadwal}>
@@ -132,7 +130,8 @@ export default function Dashboard() {
           </Form>
         </Card.Body>
       </Card>
-      {/* Daftar Jadwal */}
+
+      {/* Tabel Jadwal */}
       <Table striped bordered className="mb-4">
         <thead>
           <tr>
@@ -140,6 +139,7 @@ export default function Dashboard() {
             <th>Jam Mulai</th>
             <th>Jam Selesai</th>
             <th>Mata Kuliah</th>
+            <th>Aksi</th>
           </tr>
         </thead>
         <tbody>
@@ -149,11 +149,22 @@ export default function Dashboard() {
               <td>{item.jam_mulai}</td>
               <td>{item.jam_selesai}</td>
               <td>{item.matkul}</td>
+              <td>
+                <Button
+                  variant="danger"
+                  size="sm"
+                  onClick={() => handleHapusJadwal(item.id)}
+                >
+                  <FaTrash className="me-1" />
+                  Hapus
+                </Button>
+              </td>
             </tr>
           ))}
         </tbody>
-      </Table>{" "}
-      {/* Manajemen Kelompok */}
+      </Table>
+
+      {/* Tambah Anggota */}
       <Card className="mb-4 p-3 bg-white border-0 shadow-sm">
         <Card.Body>
           <h5 className="mb-3 fw-semibold">Tambah Anggota Kelompok</h5>
@@ -182,7 +193,8 @@ export default function Dashboard() {
             Cari Jadwal Kosong
           </Button>
         </Card.Body>
-      </Card>{" "}
+      </Card>
+
       {/* Hasil Jadwal Kosong */}
       {jadwalKosong.length > 0 && (
         <Card className="p-3 bg-white border-0 shadow-sm">
@@ -205,7 +217,7 @@ export default function Dashboard() {
                   }}
                 />
               ))}
-            </Form>{" "}
+            </Form>
             <Button
               className="mt-3"
               disabled={terpilih.length === 0}
@@ -213,14 +225,12 @@ export default function Dashboard() {
               onClick={() => {
                 const existingGrup =
                   JSON.parse(localStorage.getItem("grup_list")) || [];
-
                 const newGrup = {
                   id: Date.now(),
                   anggota: anggota,
                   jadwal: terpilih,
                 };
 
-                // Simpan ajakan ke masing-masing anggota
                 const pending =
                   JSON.parse(localStorage.getItem("pending_invitations")) || {};
                 anggota.forEach((a) => {
@@ -235,10 +245,10 @@ export default function Dashboard() {
                   "pending_invitations",
                   JSON.stringify(pending)
                 );
-
-                const updated = [...existingGrup, newGrup];
-                localStorage.setItem("grup_list", JSON.stringify(updated));
-
+                localStorage.setItem(
+                  "grup_list",
+                  JSON.stringify([...existingGrup, newGrup])
+                );
                 navigate(`/grup/${newGrup.id}`);
               }}
             >

@@ -29,7 +29,7 @@ def get_users(request):
     return [{"id": u.id, "nim": u.nim, "nama_lengkap": u.nama_lengkap} for u in users]
 
 # GET USER BY ID
-@view_config(route_name='user', renderer='json', request_method='GET')
+@view_config(route_name='user_detail', renderer='json', request_method='GET')
 def get_user(request):
     session = request.dbsession
     user_id = int(request.matchdict['id'])
@@ -39,7 +39,7 @@ def get_user(request):
     return {"id": user.id, "nim": user.nim, "nama_lengkap": user.nama_lengkap}
 
 # UPDATE USER
-@view_config(route_name='user', renderer='json', request_method='PUT')
+@view_config(route_name='user_detail', renderer='json', request_method='PUT')
 def update_user(request):
     session = request.dbsession
     user_id = int(request.matchdict['id'])
@@ -60,7 +60,7 @@ def update_user(request):
         return Response(json_body={"status": "error", "message": "NIM sudah digunakan"}, status=400)
 
 # DELETE USER
-@view_config(route_name='user', renderer='json', request_method='DELETE')
+@view_config(route_name='user_detail', renderer='json', request_method='DELETE')
 def delete_user(request):
     session = request.dbsession
     user_id = int(request.matchdict['id'])
