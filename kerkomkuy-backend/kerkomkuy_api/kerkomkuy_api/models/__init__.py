@@ -1,4 +1,5 @@
 from .user import User
+from .jadwal import JadwalKuliah
 from sqlalchemy import engine_from_config
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm import configure_mappers
