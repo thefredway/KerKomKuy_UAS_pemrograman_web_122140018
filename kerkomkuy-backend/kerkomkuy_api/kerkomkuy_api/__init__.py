@@ -26,6 +26,8 @@ def main(global_config, **settings):
 
         config.add_route('chat', '/api/chat/{grup_id}')  # GET all chat / POST
         
+        config.add_route('ajakan', '/api/ajakan')  # GET all ajakan user / POST ajakan
+        config.add_route('ajakan_detail', '/api/ajakan/{id}')  # PUT status ajakan
 
         config.scan()
     return config.make_wsgi_app()

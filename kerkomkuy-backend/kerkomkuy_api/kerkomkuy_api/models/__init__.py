@@ -6,6 +6,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm import configure_mappers
 from .meta import Base
 from .chatmessage import ChatMessage
+from .ajakan import Ajakan
 import zope.sqlalchemy
 
 # Import or define all models here to ensure they are attached to the
