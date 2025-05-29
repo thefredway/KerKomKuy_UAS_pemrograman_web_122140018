@@ -12,18 +12,17 @@ export default function Ajakan() {
   // Ambil ajakan yang masuk
   useEffect(() => {
     if (user) {
+      const fetchAjakan = async () => {
+        try {
+          const res = await getAjakanMasuk(user.id);
+          setInvitations(res.data || []);
+        } catch (err) {
+          console.error("Gagal mengambil ajakan:", err);
+        }
+      };
       fetchAjakan();
     }
   }, [user]);
-
-  const fetchAjakan = async () => {
-    try {
-      const res = await getAjakanMasuk(user.id);
-      setInvitations(res.data || []);
-    } catch (err) {
-      console.error("Gagal mengambil ajakan:", err);
-    }
-  };
 
   const handleAccept = async (ajakanId, grupId) => {
     try {
