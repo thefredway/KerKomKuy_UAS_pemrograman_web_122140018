@@ -2,24 +2,24 @@ import { useEffect, useState, useContext } from "react";
 import { Card, Button } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
-import { getGrupByUser } from "../api/api"; // Import API untuk mengambil grup
+import { getGrupByUser } from "../api/api";
 
 export default function ListGrup() {
   const [grupList, setGrupList] = useState([]);
   const navigate = useNavigate();
-  const { user } = useContext(AuthContext); // ambil data user login
+  const { user } = useContext(AuthContext);
 
   useEffect(() => {
     if (user) {
       getGrupByUser(user.id)
         .then((res) => {
-          setGrupList(res.data); // Menyimpan grup yang didapatkan dari backend
+          setGrupList(res.data || []);
         })
         .catch((err) => {
-          console.error("Error fetching groups:", err); // Menangani error jika terjadi
+          console.error("Error fetching groups:", err);
         });
     }
-  }, [user]); // Efek hanya dijalankan jika user ada atau berubah
+  }, [user]);
 
   const debugStorage = () => {
     console.log("All Groups:", grupList);
@@ -28,7 +28,7 @@ export default function ListGrup() {
 
   const resetGrups = () => {
     if (window.confirm("Atur ulang semua data grup?")) {
-      setGrupList([]); // Reset grup list dari state
+      setGrupList([]);
     }
   };
 
@@ -57,8 +57,19 @@ export default function ListGrup() {
         grupList.map((grup) => (
           <Card className="mb-3" key={grup.id}>
             <Card.Body>
-              <Card.Title>Grup ID: {grup.id}</Card.Title>
-              <p>Anggota: {grup.anggota?.map((a) => a.nim).join(", ")}</p>
+              <Card.Title>{grup.nama || `Grup ID: ${grup.id}`}</Card.Title>
+              <p>
+                <strong>Anggota:</strong>{" "}
+                {grup.anggota?.map((a) => a.nim).join(", ") || "Belum ada"}
+              </p>
+              <p>
+                <strong>Jumlah Anggota:</strong> {grup.anggota?.length || 0}
+              </p>
+              {grup.jadwal && grup.jadwal.length > 0 && (
+                <p>
+                  <strong>Jadwal:</strong> {grup.jadwal.join(", ")}
+                </p>
+              )}
               <Button
                 onClick={() => navigate(`/grup/${grup.id}`)}
                 variant="primary"

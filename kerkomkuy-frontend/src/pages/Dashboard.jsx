@@ -5,14 +5,16 @@ import {
   getJadwal,
   tambahJadwal,
   deleteJadwal,
-  cariJadwalKosong,
+  buatGrup,
+  kirimAjakan,
 } from "../api/api.js";
 import { useNavigate } from "react-router-dom";
-import { FaTrash } from "react-icons/fa"; // Ikon hapus
+import { FaTrash } from "react-icons/fa";
 
 export default function Dashboard() {
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
+
   const [jadwal, setJadwal] = useState([]);
   const [searchNim, setSearchNim] = useState("");
   const [anggota, setAnggota] = useState([]);
@@ -27,7 +29,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (user) {
-      getJadwal(user.id).then((res) => setJadwal(res.data)); // Memastikan jadwal user diambil dengan benar
+      getJadwal(user.id).then((res) => setJadwal(res.data));
     }
   }, [user]);
 
@@ -38,12 +40,9 @@ export default function Dashboard() {
   const handleSubmitJadwal = async (e) => {
     e.preventDefault();
     try {
-      // Mengirim data jadwal baru
       await tambahJadwal({ ...formJadwal, user_id: user.id });
-      // Mengambil jadwal terbaru setelah penambahan
       const res = await getJadwal(user.id);
-      setJadwal(res.data); // Memperbarui jadwal yang ditampilkan
-      // Reset form setelah penambahan
+      setJadwal(res.data);
       setFormJadwal({
         hari: "Senin",
         jam_mulai: "",
@@ -51,33 +50,55 @@ export default function Dashboard() {
         matkul: "",
       });
     } catch (err) {
-      console.error("Error adding schedule:", err); // Menangani error saat penambahan jadwal
+      console.error("Error adding schedule:", err);
     }
   };
 
   const handleHapusJadwal = async (id) => {
     try {
-      // Memanggil API untuk menghapus jadwal berdasarkan ID
       await deleteJadwal(id);
-      // Mengambil kembali jadwal yang sudah diperbarui setelah penghapusan
       const res = await getJadwal(user.id);
-      setJadwal(res.data); // Memperbarui jadwal
+      setJadwal(res.data);
     } catch (err) {
-      console.error("Error deleting schedule:", err); // Menangani error saat penghapusan jadwal
+      console.error("Error deleting schedule:", err);
     }
   };
 
   const handleCariJadwal = () => {
-    const anggotaIds = anggota.map((a) => a.nim);
-    cariJadwalKosong(anggotaIds).then((res) => {
-      setJadwalKosong(res.data.jadwal_kosong); // Menampilkan jadwal kosong
-    });
+    // Dummy schedule suggestion
+    const dummyJadwalKosong = ["Senin 10:00-12:00", "Rabu 08:00-10:00"];
+    setJadwalKosong(dummyJadwalKosong);
   };
 
   const handleAjakAnggota = () => {
     if (searchNim && !anggota.some((a) => a.nim === searchNim)) {
       setAnggota([...anggota, { nim: searchNim }]);
       setSearchNim("");
+    }
+  };
+
+  const handleBuatGrup = async () => {
+    try {
+      const res = await buatGrup({
+        admin_id: user.id,
+        anggota_nim: anggota.map((a) => a.nim),
+      });
+
+      const grupBaru = res.data.grup;
+
+      await Promise.all(
+        anggota.map((a) =>
+          kirimAjakan({
+            dari_user_id: user.id,
+            ke_user_id: parseInt(a.nim),
+            grup_id: grupBaru.id,
+          })
+        )
+      );
+
+      navigate(`/grup/${grupBaru.id}`);
+    } catch (err) {
+      console.error("Gagal membuat grup:", err);
     }
   };
 
@@ -151,7 +172,6 @@ export default function Dashboard() {
         </Card.Body>
       </Card>
 
-      {/* Tabel Jadwal */}
       <Table striped bordered className="mb-4">
         <thead>
           <tr>
@@ -184,7 +204,6 @@ export default function Dashboard() {
         </tbody>
       </Table>
 
-      {/* Tambah Anggota */}
       <Card className="mb-4 p-3 bg-white border-0 shadow-sm">
         <Card.Body>
           <h5 className="mb-3 fw-semibold">Tambah Anggota Kelompok</h5>
@@ -215,7 +234,6 @@ export default function Dashboard() {
         </Card.Body>
       </Card>
 
-      {/* Hasil Jadwal Kosong */}
       {jadwalKosong.length > 0 && (
         <Card className="p-3 bg-white border-0 shadow-sm">
           <Card.Body>
@@ -242,35 +260,7 @@ export default function Dashboard() {
               className="mt-3"
               disabled={terpilih.length === 0}
               variant="primary"
-              onClick={() => {
-                const existingGrup =
-                  JSON.parse(localStorage.getItem("grup_list")) || [];
-                const newGrup = {
-                  id: Date.now(),
-                  anggota: anggota,
-                  jadwal: terpilih,
-                };
-
-                const pending =
-                  JSON.parse(localStorage.getItem("pending_invitations")) || {};
-                anggota.forEach((a) => {
-                  if (!pending[a.nim]) pending[a.nim] = [];
-                  pending[a.nim].push({
-                    grup_id: newGrup.id,
-                    dari: user.nim,
-                    jadwal: terpilih,
-                  });
-                });
-                localStorage.setItem(
-                  "pending_invitations",
-                  JSON.stringify(pending)
-                );
-                localStorage.setItem(
-                  "grup_list",
-                  JSON.stringify([...existingGrup, newGrup])
-                );
-                navigate(`/grup/${newGrup.id}`);
-              }}
+              onClick={handleBuatGrup}
             >
               Buat Grup
             </Button>

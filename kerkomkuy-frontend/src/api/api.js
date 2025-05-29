@@ -1,36 +1,61 @@
 import axios from "axios";
 
-// Membuat instance axios dengan base URL yang sesuai
+// ✅ Konfigurasi instance Axios
 const api = axios.create({
-  baseURL: "http://127.0.0.1:6543/api", // Sesuaikan dengan URL backend Anda
+  baseURL: "http://127.0.0.1:6543/api", // Sesuaikan dengan URL backend
 });
 
-// Fungsi untuk login
+// ==============================
+// 🔐 Autentikasi
+// ==============================
+
 export const login = (nim, password) => api.post("/login", { nim, password });
 
-// Fungsi untuk mendapatkan semua pengguna
+// ==============================
+// 👤 USER
+// ==============================
+
 export const getUsers = () => api.get("/users");
-
-// Fungsi untuk mendapatkan jadwal berdasarkan user_id
-export const getJadwal = (userId) => api.get(`/jadwal?user_id=${userId}`);
-
-// Fungsi untuk menambah jadwal baru
-export const tambahJadwal = (jadwal) => api.post("/jadwal", jadwal);
-
-// User
 export const getUserById = (id) => api.get(`/users/${id}`);
+export const createUser = (data) => api.post("/users", data);
 export const updateUser = (id, data) => api.put(`/users/${id}`, data);
 export const deleteUser = (id) => api.delete(`/users/${id}`);
 
-// Jadwal
+// ==============================
+// 📅 JADWAL KULIAH
+// ==============================
+
+export const getJadwal = (userId) => api.get(`/jadwal?user_id=${userId}`);
 export const getJadwalById = (id) => api.get(`/jadwal/${id}`);
+export const tambahJadwal = (data) => api.post("/jadwal", data);
 export const updateJadwal = (id, data) => api.put(`/jadwal/${id}`, data);
 export const deleteJadwal = (id) => api.delete(`/jadwal/${id}`);
 
-// Grup
+// ==============================
+// 👥 GRUP
+// ==============================
+
 export const buatGrup = (data) => api.post("/grup", data);
 export const getGrupByUser = (userId) => api.get(`/grup?user_id=${userId}`);
 export const getGrupById = (id) => api.get(`/grup/${id}`);
 export const deleteGrup = (id) => api.delete(`/grup/${id}`);
+
+// ==============================
+// ✉️ AJAKAN
+// ==============================
+
+export const kirimAjakan = (data) => api.post("/ajakan", data);
+export const getAjakanMasuk = (userId) => api.get(`/ajakan?user_id=${userId}`);
+export const updateAjakanStatus = (id, status) =>
+  api.put(`/ajakan/${id}`, { status });
+
+// ==============================
+// 💬 CHAT
+// ==============================
+
+export const kirimChat = (data) => api.post("/chat", data);
+export const getChatByGrup = (grupId) => api.get(`/chat?grup_id=${grupId}`);
+
+// ==============================
 
 export default api;

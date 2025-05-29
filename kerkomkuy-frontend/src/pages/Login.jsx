@@ -1,6 +1,6 @@
 import { Card, Form, Button, Alert } from "react-bootstrap";
 import { useState, useContext } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 
 export default function Login() {
@@ -8,16 +8,15 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const { login } = useContext(AuthContext);
-  const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (login(nim, password)) {
-      navigate("/");
-    } else {
+    const success = await login(nim, password);
+    if (!success) {
       setError("NIM atau Password salah!");
     }
   };
+
   return (
     <div className="d-flex justify-content-center align-items-center vh-100">
       <Card

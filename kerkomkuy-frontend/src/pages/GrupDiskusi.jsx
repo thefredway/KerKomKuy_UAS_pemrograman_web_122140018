@@ -2,32 +2,47 @@ import { useParams } from "react-router-dom";
 import { useEffect, useState, useContext } from "react";
 import { Card, Form, Button, ListGroup } from "react-bootstrap";
 import { AuthContext } from "../context/AuthContext";
+import { getChatByGrup, kirimChat } from "../api/api"; // ✅ Ganti ke API
 
 export default function GrupDiskusi() {
   const { id } = useParams();
-  const { user } = useContext(AuthContext); // ambil user login
+  const { user } = useContext(AuthContext);
   const [chat, setChat] = useState([]);
   const [pesan, setPesan] = useState("");
 
+  // Ambil chat dari backend
   useEffect(() => {
-    const stored = JSON.parse(localStorage.getItem(`chat_grup_${id}`)) || [];
-    setChat(stored);
+    const fetchChat = async () => {
+      try {
+        const res = await getChatByGrup(id);
+        setChat(res.data || []);
+      } catch (err) {
+        console.error("Gagal mengambil chat:", err);
+      }
+    };
+    fetchChat();
   }, [id]);
 
-  const handleKirim = (e) => {
+  // Kirim chat ke backend
+  const handleKirim = async (e) => {
     e.preventDefault();
     if (!pesan.trim()) return;
 
-    const newMessage = {
-      sender: user.nim,
-      teks: pesan,
-      waktu: new Date().toLocaleString(),
+    const newMsg = {
+      grup_id: parseInt(id),
+      pengirim_id: user.id,
+      pesan: pesan,
     };
 
-    const newChat = [...chat, newMessage];
-    setChat(newChat);
-    setPesan("");
-    localStorage.setItem(`chat_grup_${id}`, JSON.stringify(newChat));
+    try {
+      await kirimChat(newMsg);
+      // Ambil ulang semua chat setelah kirim
+      const res = await getChatByGrup(id);
+      setChat(res.data || []);
+      setPesan("");
+    } catch (err) {
+      console.error("Gagal mengirim pesan:", err);
+    }
   };
 
   return (
@@ -39,10 +54,15 @@ export default function GrupDiskusi() {
             {chat.map((msg, i) => (
               <ListGroup.Item key={i}>
                 <div>
-                  <strong className="text-primary">{msg.sender}</strong> —{" "}
-                  <small className="text-muted">{msg.waktu}</small>
+                  <strong className="text-primary">
+                    {msg.pengirim_nim || `User ${msg.pengirim_id}`}
+                  </strong>{" "}
+                  —{" "}
+                  <small className="text-muted">
+                    {new Date(msg.timestamp).toLocaleString()}
+                  </small>
                 </div>
-                <div>{msg.teks}</div>
+                <div>{msg.pesan}</div>
               </ListGroup.Item>
             ))}
           </ListGroup>

@@ -2,6 +2,7 @@ import { Navbar, Container, Nav, Button, Badge } from "react-bootstrap";
 import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { Link, useLocation } from "react-router-dom";
+import { getAjakanMasuk } from "../api/api"; // ✅ Ganti dari localStorage ke API
 
 export default function AppNavbar() {
   const { user, logout } = useContext(AuthContext);
@@ -10,14 +11,18 @@ export default function AppNavbar() {
 
   useEffect(() => {
     if (user) {
-      const checkPendingInvitations = () => {
-        const pending =
-          JSON.parse(localStorage.getItem("pending_invitations")) || {};
-        const userInvitations = pending[user.nim] || [];
-        setPendingCount(userInvitations.length);
+      const fetchPending = async () => {
+        try {
+          const res = await getAjakanMasuk(user.id);
+          const pendingAjakan = res.data.filter((a) => a.status === "pending");
+          setPendingCount(pendingAjakan.length);
+        } catch (err) {
+          console.error("Gagal mengambil data ajakan:", err);
+        }
       };
-      checkPendingInvitations();
-      const interval = setInterval(checkPendingInvitations, 10000);
+
+      fetchPending();
+      const interval = setInterval(fetchPending, 10000); // Refresh setiap 10 detik
       return () => clearInterval(interval);
     }
   }, [user]);

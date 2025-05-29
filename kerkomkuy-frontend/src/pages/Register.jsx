@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Form, Button, Card, Alert } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
+import { createUser } from "../api/api"; // ✅ Gunakan API backend
 
 export default function Register() {
   const [nim, setNim] = useState("");
@@ -10,27 +11,33 @@ export default function Register() {
   const [success, setSuccess] = useState(false);
   const navigate = useNavigate();
 
-  const handleRegister = (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
-    if (!nim || !password) {
-      setError("NIM dan Password wajib diisi!");
+    setError("");
+    setSuccess(false);
+
+    if (!nim || !password || !namaLengkap) {
+      setError("Semua field wajib diisi!");
       return;
     }
 
-    // Simpan ke localStorage sebagai user mock
-    const users = JSON.parse(localStorage.getItem("users")) || [];
-    const exists = users.find((u) => u.nim === nim);
-
-    if (exists) {
-      setError("NIM sudah terdaftar");
-      return;
+    try {
+      await createUser({
+        nim,
+        password,
+        nama_lengkap: namaLengkap,
+      });
+      setSuccess(true);
+      setTimeout(() => navigate("/login"), 2000);
+    } catch (err) {
+      if (err.response?.data?.message === "NIM sudah digunakan") {
+        setError("NIM sudah terdaftar.");
+      } else {
+        setError("Terjadi kesalahan saat registrasi.");
+      }
     }
-    users.push({ nim, password, namaLengkap });
-    users.push({ nim, password });
-    localStorage.setItem("users", JSON.stringify(users));
-    setSuccess(true);
-    setTimeout(() => navigate("/login"), 2000);
   };
+
   return (
     <div className="d-flex justify-content-center align-items-center vh-100">
       <Card
