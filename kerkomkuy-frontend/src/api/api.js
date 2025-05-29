@@ -3,6 +3,10 @@ import axios from "axios";
 // ✅ Konfigurasi instance Axios
 const api = axios.create({
   baseURL: "http://127.0.0.1:6543/api", // Sesuaikan dengan URL backend
+  headers: {
+    "Content-Type": "application/json",
+    Accept: "application/json",
+  },
 });
 
 // ==============================
@@ -36,7 +40,7 @@ export const deleteJadwal = (id) => api.delete(`/jadwal/${id}`);
 // ==============================
 
 export const buatGrup = (data) => api.post("/grup", data);
-export const getGrupByUser = (userId) => api.get(`/grup?user_id=${userId}`);
+export const getGrupByUser = (nim) => api.get(`/grup?nim=${nim}`);
 export const getGrupById = (id) => api.get(`/grup/${id}`);
 export const deleteGrup = (id) => api.delete(`/grup/${id}`);
 

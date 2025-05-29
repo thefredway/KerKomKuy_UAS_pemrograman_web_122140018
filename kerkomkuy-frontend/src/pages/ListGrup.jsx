@@ -11,10 +11,9 @@ export default function ListGrup() {
 
   useEffect(() => {
     let intervalId;
-
     const fetchGrupList = async () => {
       try {
-        const res = await getGrupByUser(user.id);
+        const res = await getGrupByUser(user.nim);
         setGrupList(res.data || []);
       } catch (err) {
         console.error("Error fetching groups:", err);
