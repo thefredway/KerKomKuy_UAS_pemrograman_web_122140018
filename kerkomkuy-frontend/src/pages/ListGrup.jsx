@@ -10,15 +10,23 @@ export default function ListGrup() {
   const { user } = useContext(AuthContext);
 
   useEffect(() => {
+    let intervalId;
+
+    const fetchGrupList = async () => {
+      try {
+        const res = await getGrupByUser(user.id);
+        setGrupList(res.data || []);
+      } catch (err) {
+        console.error("Error fetching groups:", err);
+      }
+    };
+
     if (user) {
-      getGrupByUser(user.id)
-        .then((res) => {
-          setGrupList(res.data || []);
-        })
-        .catch((err) => {
-          console.error("Error fetching groups:", err);
-        });
+      fetchGrupList();
+      intervalId = setInterval(fetchGrupList, 10000); // refresh setiap 10 detik
     }
+
+    return () => clearInterval(intervalId);
   }, [user]);
 
   const debugStorage = () => {
