@@ -1,6 +1,7 @@
 import { useContext, useEffect, useState } from "react";
 import { Card, Button, Alert } from "react-bootstrap";
 import { AuthContext } from "../context/AuthContext";
+import { getGrupByUser, getGrupById, updateGrup, deleteGrup } from "../api/api"; // Mengimpor API yang diperlukan
 import { useNavigate } from "react-router-dom";
 
 export default function Ajakan() {
@@ -8,37 +9,66 @@ export default function Ajakan() {
   const [invitations, setInvitations] = useState([]);
   const navigate = useNavigate();
 
+  // Mengambil ajakan yang belum diterima oleh user
   useEffect(() => {
-    const stored =
-      JSON.parse(localStorage.getItem("pending_invitations")) || {};
-    setInvitations(stored[user.nim] || []);
-  }, [user.nim]);
-
-  const handleAccept = (grup_id) => {
-    // Tambahkan ke grup yang ada
-    const list = JSON.parse(localStorage.getItem("grup_list")) || [];
-    const target = list.find((g) => g.id === grup_id);
-    if (target) {
-      // Hindari duplikat
-      if (!target.anggota.some((a) => a.nim === user.nim)) {
-        target.anggota.push({ nim: user.nim });
-        localStorage.setItem("grup_list", JSON.stringify(list));
-      }
+    if (user) {
+      getPendingInvitations(user.nim).then((res) => {
+        setInvitations(res.data || []);
+      });
     }
+  }, [user]);
 
-    handleRemove(grup_id);
-    navigate(`/grup/${grup_id}`);
+  // Mendapatkan ajakan pending dari backend
+  const getPendingInvitations = async (nim) => {
+    try {
+      const response = await getGrupByUser(user.id); // Ambil grup yang dimiliki user
+      const pending = response.data.filter((grup) =>
+        grup.pending_invites.some((invite) => invite.nim === nim)
+      );
+      return { data: pending };
+    } catch (err) {
+      console.error("Error fetching pending invitations:", err);
+      return { data: [] }; // Mengembalikan array kosong jika error
+    }
   };
 
-  const handleRemove = (grup_id) => {
-    const stored =
-      JSON.parse(localStorage.getItem("pending_invitations")) || {};
-    const updated = (stored[user.nim] || []).filter(
-      (g) => g.grup_id !== grup_id
-    );
-    stored[user.nim] = updated;
-    localStorage.setItem("pending_invitations", JSON.stringify(stored));
-    setInvitations(updated);
+  const handleAccept = async (grup_id) => {
+    try {
+      // Ambil grup berdasarkan ID
+      const grupResponse = await getGrupById(grup_id);
+      const grup = grupResponse.data;
+
+      // Menambahkan user ke dalam grup jika belum ada
+      if (!grup.anggota.some((a) => a.nim === user.nim)) {
+        grup.anggota.push({ nim: user.nim });
+        await updateGrup(grup_id, grup); // Update grup di backend
+      }
+
+      // Menghapus ajakan dari daftar pending
+      await deletePendingInvitation(grup_id); // Hapus ajakan dari pending di backend
+      navigate(`/grup/${grup_id}`);
+    } catch (err) {
+      console.error("Error accepting invitation:", err);
+    }
+  };
+
+  const handleRemove = async (grup_id) => {
+    try {
+      // Menghapus ajakan yang ditolak
+      await deletePendingInvitation(grup_id); // Hapus ajakan dari pending di backend
+      setInvitations((prev) => prev.filter((inv) => inv.grup_id !== grup_id)); // Update state ajakan
+    } catch (err) {
+      console.error("Error removing invitation:", err);
+    }
+  };
+
+  // Fungsi untuk menghapus ajakan pending dari backend
+  const deletePendingInvitation = async (grup_id) => {
+    try {
+      await deleteGrup(grup_id); // Menghapus ajakan grup yang ditolak
+    } catch (err) {
+      console.error("Error deleting pending invitation:", err);
+    }
   };
 
   return (

@@ -2,6 +2,7 @@ import { useEffect, useState, useContext } from "react";
 import { Card, Button } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
+import { getGrupByUser } from "../api/api"; // Import API untuk mengambil grup
 
 export default function ListGrup() {
   const [grupList, setGrupList] = useState([]);
@@ -9,26 +10,25 @@ export default function ListGrup() {
   const { user } = useContext(AuthContext); // ambil data user login
 
   useEffect(() => {
-    const stored = JSON.parse(localStorage.getItem("grup_list")) || [];
+    if (user) {
+      getGrupByUser(user.id)
+        .then((res) => {
+          setGrupList(res.data); // Menyimpan grup yang didapatkan dari backend
+        })
+        .catch((err) => {
+          console.error("Error fetching groups:", err); // Menangani error jika terjadi
+        });
+    }
+  }, [user]); // Efek hanya dijalankan jika user ada atau berubah
 
-    // Filter
-    const milikSaya = stored.filter((grup) =>
-      grup.anggota.some((a) => a.nim === user.nim)
-    );
-
-    setGrupList(milikSaya);
-  }, [user]);
   const debugStorage = () => {
-    const stored = JSON.parse(localStorage.getItem("grup_list")) || [];
-    console.log("All Groups:", stored);
+    console.log("All Groups:", grupList);
     console.log("Current User:", user);
-    console.log("Filtered Groups:", grupList);
   };
 
   const resetGrups = () => {
     if (window.confirm("Atur ulang semua data grup?")) {
-      localStorage.removeItem("grup_list");
-      setGrupList([]);
+      setGrupList([]); // Reset grup list dari state
     }
   };
 

@@ -1,30 +1,36 @@
 import axios from "axios";
-import MockAdapter from "axios-mock-adapter";
 
-const mock = new MockAdapter(axios);
+// Membuat instance axios dengan base URL yang sesuai
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:5173",
+  baseURL: "http://127.0.0.1:6543/api", // Sesuaikan dengan URL backend Anda
 });
 
-// Mock endpoints
-mock.onGet("/api/jadwal").reply(200, {
-  jadwal: [
-    {
-      id: 1,
-      hari: "Senin",
-      jam_mulai: "08:00",
-      jam_selesai: "10:00",
-      matkul: "Pemrograman Web",
-    },
-  ],
-});
+// Fungsi untuk login
+export const login = (nim, password) => api.post("/login", { nim, password });
 
-mock.onPost("/api/cari-jadwal").reply(200, {
-  jadwal_kosong: ["Senin 10:00-12:00", "Rabu 13:00-15:00"],
-});
+// Fungsi untuk mendapatkan semua pengguna
+export const getUsers = () => api.get("/users");
 
-export const getJadwal = () => api.get("/api/jadwal");
-export const cariJadwalKosong = (anggotaIds) =>
-  api.post("/api/cari-jadwal", { anggota_ids: anggotaIds });
+// Fungsi untuk mendapatkan jadwal berdasarkan user_id
+export const getJadwal = (userId) => api.get(`/jadwal?user_id=${userId}`);
+
+// Fungsi untuk menambah jadwal baru
+export const tambahJadwal = (jadwal) => api.post("/jadwal", jadwal);
+
+// User
+export const getUserById = (id) => api.get(`/users/${id}`);
+export const updateUser = (id, data) => api.put(`/users/${id}`, data);
+export const deleteUser = (id) => api.delete(`/users/${id}`);
+
+// Jadwal
+export const getJadwalById = (id) => api.get(`/jadwal/${id}`);
+export const updateJadwal = (id, data) => api.put(`/jadwal/${id}`, data);
+export const deleteJadwal = (id) => api.delete(`/jadwal/${id}`);
+
+// Grup
+export const buatGrup = (data) => api.post("/grup", data);
+export const getGrupByUser = (userId) => api.get(`/grup?user_id=${userId}`);
+export const getGrupById = (id) => api.get(`/grup/${id}`);
+export const deleteGrup = (id) => api.delete(`/grup/${id}`);
 
 export default api;

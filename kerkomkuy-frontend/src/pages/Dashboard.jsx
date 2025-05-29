@@ -1,7 +1,12 @@
 import { useState, useEffect, useContext } from "react";
 import { Button, Card, Form, Table, Alert, Col, Row } from "react-bootstrap";
 import { AuthContext } from "../context/AuthContext";
-import { getJadwal, cariJadwalKosong } from "../api/api.js";
+import {
+  getJadwal,
+  tambahJadwal,
+  deleteJadwal,
+  cariJadwalKosong,
+} from "../api/api.js";
 import { useNavigate } from "react-router-dom";
 import { FaTrash } from "react-icons/fa"; // Ikon hapus
 
@@ -22,7 +27,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (user) {
-      getJadwal().then((res) => setJadwal(res.data.jadwal));
+      getJadwal(user.id).then((res) => setJadwal(res.data)); // Memastikan jadwal user diambil dengan benar
     }
   }, [user]);
 
@@ -30,27 +35,42 @@ export default function Dashboard() {
     setFormJadwal({ ...formJadwal, [e.target.name]: e.target.value });
   };
 
-  const handleSubmitJadwal = (e) => {
+  const handleSubmitJadwal = async (e) => {
     e.preventDefault();
-    const newJadwal = { ...formJadwal, id: Date.now() };
-    setJadwal([...jadwal, newJadwal]);
-    setFormJadwal({
-      hari: "Senin",
-      jam_mulai: "",
-      jam_selesai: "",
-      matkul: "",
-    });
+    try {
+      // Mengirim data jadwal baru
+      await tambahJadwal({ ...formJadwal, user_id: user.id });
+      // Mengambil jadwal terbaru setelah penambahan
+      const res = await getJadwal(user.id);
+      setJadwal(res.data); // Memperbarui jadwal yang ditampilkan
+      // Reset form setelah penambahan
+      setFormJadwal({
+        hari: "Senin",
+        jam_mulai: "",
+        jam_selesai: "",
+        matkul: "",
+      });
+    } catch (err) {
+      console.error("Error adding schedule:", err); // Menangani error saat penambahan jadwal
+    }
   };
 
-  const handleHapusJadwal = (id) => {
-    const filtered = jadwal.filter((item) => item.id !== id);
-    setJadwal(filtered);
+  const handleHapusJadwal = async (id) => {
+    try {
+      // Memanggil API untuk menghapus jadwal berdasarkan ID
+      await deleteJadwal(id);
+      // Mengambil kembali jadwal yang sudah diperbarui setelah penghapusan
+      const res = await getJadwal(user.id);
+      setJadwal(res.data); // Memperbarui jadwal
+    } catch (err) {
+      console.error("Error deleting schedule:", err); // Menangani error saat penghapusan jadwal
+    }
   };
 
   const handleCariJadwal = () => {
     const anggotaIds = anggota.map((a) => a.nim);
     cariJadwalKosong(anggotaIds).then((res) => {
-      setJadwalKosong(res.data.jadwal_kosong);
+      setJadwalKosong(res.data.jadwal_kosong); // Menampilkan jadwal kosong
     });
   };
 

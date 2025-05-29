@@ -1,5 +1,6 @@
 import { createContext, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { login as apiLogin } from "../api/api"; // Mengimpor fungsi login dari API
 
 export const AuthContext = createContext();
 
@@ -19,23 +20,24 @@ export function AuthProvider({ children }) {
     setLoading(false); // Setelah pengecekan selesai
   }, []);
 
-  const login = (nim, password) => {
-    const users = JSON.parse(localStorage.getItem("users")) || [];
-    const match = users.find((u) => u.nim === nim && u.password === password);
-    if (match) {
-      const userData = { nim, namaLengkap: match.namaLengkap };
-      setUser(userData);
-      localStorage.setItem("user", JSON.stringify(userData));
-      navigate("/");
+  const login = async (nim, password) => {
+    try {
+      const response = await apiLogin(nim, password); // Panggil API login
+      const user = response.data.user;
+      setUser(user); // Set user ke state
+      localStorage.setItem("user", JSON.stringify(user)); // Simpan user ke localStorage
+      navigate("/"); // Arahkan ke halaman utama setelah login berhasil
       return true;
+    } catch (err) {
+      console.error("Login failed:", err);
+      return false; // Jika gagal login
     }
-    return false;
   };
 
   const logout = () => {
     setUser(false);
     localStorage.removeItem("user"); // Hapus dari localStorage
-    navigate("/login");
+    navigate("/login"); // Arahkan ke halaman login
   };
 
   return (
