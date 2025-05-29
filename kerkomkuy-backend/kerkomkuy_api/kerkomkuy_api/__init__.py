@@ -5,6 +5,19 @@ from .views.jadwal import *
 from .views.grup import *
 from .views.chat import *
 
+from pyramid.config import Configurator
+from pyramid.events import NewRequest
+
+def add_cors_headers_response_callback(event):
+    def cors_headers(request, response):
+        response.headers.update({
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+        })
+        return response
+    event.request.add_response_callback(cors_headers)
+    
 def main(global_config, **settings):    
     with Configurator(settings=settings) as config:
         config.include('pyramid_jinja2')

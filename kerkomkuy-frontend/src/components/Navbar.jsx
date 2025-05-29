@@ -10,24 +10,24 @@ export default function AppNavbar() {
   const location = useLocation();
 
   useEffect(() => {
-    if (user) {
-      const fetchPending = async () => {
-        try {
-          const res = await getAjakanMasuk(user.id);
-          const pendingAjakan = res.data.filter((a) => a.status === "pending");
-          setPendingCount(pendingAjakan.length);
-        } catch (err) {
-          console.error("Gagal mengambil data ajakan:", err);
-        }
-      };
+    if (!user?.id) return;
 
-      fetchPending();
-      const interval = setInterval(fetchPending, 10000); // Refresh setiap 10 detik
-      return () => clearInterval(interval);
-    }
-  }, [user]);
+    const fetchPending = async () => {
+      try {
+        const response = await getAjakanMasuk(user.id);
+        const pendingAjakan = response.data.filter(
+          (a) => a.status === "pending"
+        );
+        setPendingCount(pendingAjakan.length);
+      } catch (error) {
+        console.error("Gagal mengambil data ajakan:", error);
+      }
+    };
 
-  if (!user) return null;
+    fetchPending();
+    const interval = setInterval(fetchPending, 10000); // Optional refresh tiap 10 detik
+    return () => clearInterval(interval);
+  }, [user?.id]);
 
   return (
     <Navbar
