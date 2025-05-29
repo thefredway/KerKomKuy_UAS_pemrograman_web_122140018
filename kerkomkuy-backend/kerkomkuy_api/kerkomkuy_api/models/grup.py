@@ -16,5 +16,8 @@ class Grup(Base):
     id = Column(Integer, primary_key=True)
     admin_id = Column(Integer, ForeignKey('users.id'), nullable=False)
 
-    # relasi opsional
+    # Relasi many-to-many dengan User
     anggota = relationship("User", secondary=grup_anggota, backref="grup_anggota")
+
+    # Relasi satu-ke-banyak ke ChatMessage
+    chat = relationship("ChatMessage", back_populates="grup", cascade="all, delete-orphan")

@@ -4,6 +4,8 @@ from .grup import Grup, grup_anggota
 from sqlalchemy import engine_from_config
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm import configure_mappers
+from .meta import Base
+from .chatmessage import ChatMessage
 import zope.sqlalchemy
 
 # Import or define all models here to ensure they are attached to the

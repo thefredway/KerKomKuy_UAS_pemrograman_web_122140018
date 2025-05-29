@@ -3,6 +3,7 @@ from .views.user import *
 from .views.auth import *
 from .views.jadwal import *
 from .views.grup import *
+from .views.chat import *
 
 def main(global_config, **settings):    
     with Configurator(settings=settings) as config:
@@ -22,6 +23,8 @@ def main(global_config, **settings):
 
         config.add_route('grup', '/api/grup')              # GET all / POST
         config.add_route('grup_detail', '/api/grup/{id}')  # GET / DELETE
+
+        config.add_route('chat', '/api/chat/{grup_id}')  # GET all chat / POST
         
 
         config.scan()
