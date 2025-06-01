@@ -1,5 +1,14 @@
 import { useState, useEffect, useContext } from "react";
-import { Button, Card, Form, Table, Alert, Col, Row } from "react-bootstrap";
+import {
+  Button,
+  Card,
+  Form,
+  Table,
+  Alert,
+  Col,
+  Row,
+  Accordion,
+} from "react-bootstrap";
 import { AuthContext } from "../context/AuthContext";
 import {
   getJadwal,
@@ -7,6 +16,8 @@ import {
   deleteJadwal,
   buatGrup,
   kirimAjakan,
+  getUsers,
+  cariJadwalKosong,
 } from "../api/api.js";
 import { useNavigate } from "react-router-dom";
 import { FaTrash } from "react-icons/fa";
@@ -18,17 +29,17 @@ export default function Dashboard() {
   const [jadwal, setJadwal] = useState([]);
   const [searchNim, setSearchNim] = useState("");
   const [anggota, setAnggota] = useState([]);
-  const [jadwalKosong, setJadwalKosong] = useState([]);
+  const [jadwalKosong, setJadwalKosong] = useState({});
+  const [terpilih, setTerpilih] = useState([]);
   const [formJadwal, setFormJadwal] = useState({
     hari: "Senin",
     jam_mulai: "",
     jam_selesai: "",
     matkul: "",
   });
-  const [terpilih, setTerpilih] = useState([]);
 
   useEffect(() => {
-    if (user) {
+    if (user?.id) {
       getJadwal(user.id).then((res) => setJadwal(res.data));
     }
   }, [user]);
@@ -64,33 +75,57 @@ export default function Dashboard() {
     }
   };
 
-  const handleCariJadwal = () => {
-    // Dummy schedule suggestion
-    const dummyJadwalKosong = ["Senin 10:00-12:00", "Rabu 08:00-10:00"];
-    setJadwalKosong(dummyJadwalKosong);
+  const handleCariJadwal = async () => {
+    try {
+      const allIds = [user.id, ...anggota.map((a) => a.id)];
+      const res = await cariJadwalKosong({ anggota_ids: allIds });
+      setJadwalKosong(res.data);
+    } catch (err) {
+      console.error("Gagal mencari jadwal kosong:", err);
+    }
   };
 
-  const handleAjakAnggota = () => {
-    if (searchNim && !anggota.some((a) => a.nim === searchNim)) {
-      setAnggota([...anggota, { nim: searchNim }]);
-      setSearchNim("");
+  const handleAjakAnggota = async () => {
+    if (!searchNim) return;
+    try {
+      const res = await getUsers();
+      const found = res.data.find((u) => u.nim === searchNim);
+      if (found) {
+        const alreadyAdded = anggota.some((a) => a.id === found.id);
+        if (!alreadyAdded) {
+          setAnggota([...anggota, found]);
+        }
+        setSearchNim("");
+      } else {
+        alert("NIM tidak ditemukan.");
+      }
+    } catch (err) {
+      console.error("Gagal mencari user:", err);
     }
   };
 
   const handleBuatGrup = async () => {
     try {
+      if (!anggota.every((a) => a.id)) {
+        console.error("Ada anggota tanpa ID:", anggota);
+        alert("Semua anggota harus valid dan memiliki ID.");
+        return;
+      }
+
       const res = await buatGrup({
         admin_id: user.id,
         anggota_nim: anggota.map((a) => a.nim),
+        jadwal: terpilih, // ✅ TERPILIH JADWAL IKUT DIKIRIM
       });
 
-      const grupBaru = res.data.grup;
+      const grupBaru = { id: res.data.grup_id };
+      console.log("Grup berhasil dibuat:", grupBaru);
 
       await Promise.all(
         anggota.map((a) =>
           kirimAjakan({
             dari_user_id: user.id,
-            ke_user_id: parseInt(a.nim),
+            ke_user_id: a.id,
             grup_id: grupBaru.id,
           })
         )
@@ -99,6 +134,7 @@ export default function Dashboard() {
       navigate(`/grup/${grupBaru.id}`);
     } catch (err) {
       console.error("Gagal membuat grup:", err);
+      alert("Terjadi kesalahan saat membuat grup. Silakan coba lagi.");
     }
   };
 
@@ -108,11 +144,12 @@ export default function Dashboard() {
         Selamat Datang di KerKomKuy
       </h1>
       {user ? (
-        <p className="mb-4">Semangat Kerkom, {user.namaLengkap}!</p>
+        <p className="mb-4">Semangat Kerkom, {user.nama_lengkap}!</p>
       ) : (
         <p className="mb-4">Loading user data...</p>
       )}
 
+      {/* Jadwal Kuliah */}
       <h2>Jadwal Kuliah</h2>
       <Card className="mb-4 p-3 bg-white border-0 shadow-sm">
         <Card.Body>
@@ -172,6 +209,7 @@ export default function Dashboard() {
         </Card.Body>
       </Card>
 
+      {/* Tabel Jadwal */}
       <Table striped bordered className="mb-4">
         <thead>
           <tr>
@@ -204,6 +242,7 @@ export default function Dashboard() {
         </tbody>
       </Table>
 
+      {/* Tambah Anggota */}
       <Card className="mb-4 p-3 bg-white border-0 shadow-sm">
         <Card.Body>
           <h5 className="mb-3 fw-semibold">Tambah Anggota Kelompok</h5>
@@ -221,7 +260,8 @@ export default function Dashboard() {
           </div>
           {anggota.length > 0 && (
             <Alert variant="info" className="rounded-pill px-4 py-2">
-              Anggota Terpilih: {anggota.map((a) => a.nim).join(", ")}
+              Anggota Terpilih:{" "}
+              {anggota.map((a) => a.nama_lengkap || a.nim).join(", ")}
             </Alert>
           )}
           <Button
@@ -234,28 +274,45 @@ export default function Dashboard() {
         </Card.Body>
       </Card>
 
-      {jadwalKosong.length > 0 && (
+      {/* Hasil Jadwal Kosong */}
+      {Object.keys(jadwalKosong).length > 0 && (
         <Card className="p-3 bg-white border-0 shadow-sm">
           <Card.Body>
             <h5 className="fw-semibold">Jadwal Kosong Bersama</h5>
-            <Form>
-              {jadwalKosong.map((slot, index) => (
-                <Form.Check
-                  type="checkbox"
-                  label={slot}
-                  key={index}
-                  id={`checkbox-${index}`}
-                  checked={terpilih.includes(slot)}
-                  onChange={(e) => {
-                    if (e.target.checked) {
-                      setTerpilih([...terpilih, slot]);
-                    } else {
-                      setTerpilih(terpilih.filter((s) => s !== slot));
-                    }
-                  }}
-                />
+            <Accordion>
+              {Object.entries(jadwalKosong).map(([hari, slots], index) => (
+                <Accordion.Item eventKey={index.toString()} key={hari}>
+                  <Accordion.Header>{hari}</Accordion.Header>
+                  <Accordion.Body>
+                    {slots.length === 0 ? (
+                      <div className="text-muted">
+                        Tidak ada waktu kosong di hari ini
+                      </div>
+                    ) : (
+                      slots.map((slot, i) => {
+                        const label = `${hari} ${slot}`;
+                        return (
+                          <Form.Check
+                            key={`${hari}-${i}`}
+                            type="checkbox"
+                            label={label}
+                            id={`${hari}-${i}`}
+                            checked={terpilih.includes(label)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setTerpilih([label]);
+                              } else {
+                                setTerpilih([]);
+                              }
+                            }}
+                          />
+                        );
+                      })
+                    )}
+                  </Accordion.Body>
+                </Accordion.Item>
               ))}
-            </Form>
+            </Accordion>
             <Button
               className="mt-3"
               disabled={terpilih.length === 0}

@@ -2,6 +2,7 @@ from pyramid.view import view_config
 from pyramid.response import Response
 from sqlalchemy.orm import Session
 from ..models import JadwalKuliah
+from datetime import datetime, timedelta
 
 # CREATE
 @view_config(route_name='jadwal', renderer='json', request_method='POST')
@@ -90,3 +91,50 @@ def delete_jadwal(request):
     session.delete(jadwal)
     session.flush()
     return {"status": "deleted", "jadwal_id": id}
+
+
+@view_config(route_name='cari_jadwal_kosong', renderer='json', request_method='POST')
+def cari_jadwal_kosong(request):
+    data = request.json_body
+    anggota_ids = data.get("anggota_ids")
+    session: Session = request.dbsession
+
+    if not anggota_ids:
+        return Response(json_body={"error": "anggota_ids tidak boleh kosong"}, status=400)
+
+    jam_mulai = datetime.strptime("07:00", "%H:%M")
+    jam_selesai = datetime.strptime("21:00", "%H:%M")
+    hasil = {}
+    hari_list = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"]
+
+    for hari in hari_list:
+        jadwal = session.query(JadwalKuliah).filter(
+            JadwalKuliah.user_id.in_(anggota_ids),
+            JadwalKuliah.hari == hari
+        ).all()
+
+        terisi = []
+        for j in jadwal:
+            mulai = datetime.strptime(j.jam_mulai, "%H:%M")
+            selesai = datetime.strptime(j.jam_selesai, "%H:%M")
+            terisi.append((mulai, selesai))
+
+        terisi.sort()
+        kosong = []
+        pointer = jam_mulai
+
+        for start, end in terisi:
+            if pointer + timedelta(hours=2) <= start:
+                kosong.append((pointer, start))
+            pointer = max(pointer, end)
+
+        if pointer + timedelta(hours=2) <= jam_selesai:
+            kosong.append((pointer, jam_selesai))
+
+        hasil[hari] = [
+            f"{mulai.strftime('%H:%M')}–{selesai.strftime('%H:%M')}"
+            for mulai, selesai in kosong
+            if (selesai - mulai) >= timedelta(hours=2)
+        ]
+
+    return hasil

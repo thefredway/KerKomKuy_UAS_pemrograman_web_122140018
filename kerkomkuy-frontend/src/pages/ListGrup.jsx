@@ -22,7 +22,7 @@ export default function ListGrup() {
 
     if (user) {
       fetchGrupList();
-      intervalId = setInterval(fetchGrupList, 10000); // refresh setiap 10 detik
+      intervalId = setInterval(fetchGrupList, 10000);
     }
 
     return () => clearInterval(intervalId);

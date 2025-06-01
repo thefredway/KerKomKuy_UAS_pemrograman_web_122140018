@@ -26,9 +26,8 @@ def get_ajakan_for_user(request):
     user_id = request.params.get("user_id")
 
     if not user_id:
-        return Response(json_body={"message": "user_id dibutuhkan"}, status=400)
-
-    rows = session.query(Ajakan).filter_by(ke_user_id=user_id).all()
+        return Response(json_body={"message": "user_id dibutuhkan"}, status=400)    # Hanya ambil ajakan yang masih pending
+    rows = session.query(Ajakan).filter_by(ke_user_id=user_id, status="pending").all()
     return [
         {
             "id": a.id,
