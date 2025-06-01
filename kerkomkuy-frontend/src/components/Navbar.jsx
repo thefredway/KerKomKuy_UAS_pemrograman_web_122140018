@@ -27,8 +27,8 @@ export default function AppNavbar() {
     };
 
     fetchPending();
-    // Set interval untuk memperbarui setiap 30 detik
-    const interval = setInterval(fetchPending, 30000);
+    // Set interval untuk memperbarui setiap 5 detik
+    const interval = setInterval(fetchPending, 5000);
 
     return () => clearInterval(interval);
   }, [user?.id]);

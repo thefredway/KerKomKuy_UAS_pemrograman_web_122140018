@@ -43,7 +43,15 @@ def get_grups_by_user(request):
         ))
     ).all()
 
-    return [{"id": g.id, "admin_id": g.admin_id} for g in grups]
+    return [{
+        "id": g.id,
+        "admin_id": g.admin_id,
+        "anggota": [{
+            "id": a.id,
+            "nim": a.nim,
+            "nama_lengkap": a.nama_lengkap
+        } for a in g.anggota]
+    } for g in grups]
 
 # GET: Detail grup by id
 @view_config(route_name='grup_detail', renderer='json', request_method='GET')

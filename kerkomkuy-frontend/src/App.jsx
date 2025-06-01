@@ -1,5 +1,5 @@
 import React from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useLocation } from "react-router-dom";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -12,13 +12,14 @@ import GrupDiskusi from "./pages/GrupDiskusi";
 import Ajakan from "./pages/Ajakan";
 
 function App() {
-  console.log("App component rendered"); // Log tambahan
+  const location = useLocation();
+  const isAuthPage = ["/login", "/register"].includes(location.pathname);
 
   return (
     <div className="d-flex flex-column min-vh-100">
-      <AppNavbar />
+      {!isAuthPage && <AppNavbar />}
       <div className="flex-grow-1">
-        <main className="main container py-4">
+        <main className={`main ${isAuthPage ? "" : "container"} py-4`}>
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
@@ -32,7 +33,7 @@ function App() {
           </Routes>
         </main>
       </div>
-      <Footer />
+      {!isAuthPage && <Footer />}
     </div>
   );
 }

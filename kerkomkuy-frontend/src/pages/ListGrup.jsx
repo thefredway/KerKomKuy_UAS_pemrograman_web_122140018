@@ -14,7 +14,14 @@ export default function ListGrup() {
     const fetchGrupList = async () => {
       try {
         const res = await getGrupByUser(user.nim);
-        setGrupList(res.data || []);
+        const groups = res.data || [];
+        // Sort groups to show groups where user is admin first
+        groups.sort((a, b) => {
+          const isAdminA = a.admin_id === user.id;
+          const isAdminB = b.admin_id === user.id;
+          return isAdminB - isAdminA;
+        });
+        setGrupList(groups);
       } catch (err) {
         console.error("Error fetching groups:", err);
       }
@@ -22,6 +29,7 @@ export default function ListGrup() {
 
     if (user) {
       fetchGrupList();
+      // Poll for updates every 10 seconds
       intervalId = setInterval(fetchGrupList, 10000);
     }
 
@@ -64,19 +72,21 @@ export default function ListGrup() {
         grupList.map((grup) => (
           <Card className="mb-3" key={grup.id}>
             <Card.Body>
-              <Card.Title>{grup.nama || `Grup ID: ${grup.id}`}</Card.Title>
+              <Card.Title className="d-flex justify-content-between align-items-center">
+                <span>Grup ID: {grup.id}</span>
+                {grup.admin_id === user.id && (
+                  <span className="badge bg-primary">Admin</span>
+                )}
+              </Card.Title>
               <p>
                 <strong>Anggota:</strong>{" "}
-                {grup.anggota?.map((a) => a.nim).join(", ") || "Belum ada"}
+                {grup.anggota && grup.anggota.length > 0
+                  ? grup.anggota.map((a) => a.nama_lengkap || a.nim).join(", ")
+                  : "Belum ada"}
               </p>
               <p>
                 <strong>Jumlah Anggota:</strong> {grup.anggota?.length || 0}
               </p>
-              {grup.jadwal && grup.jadwal.length > 0 && (
-                <p>
-                  <strong>Jadwal:</strong> {grup.jadwal.join(", ")}
-                </p>
-              )}
               <Button
                 onClick={() => navigate(`/grup/${grup.id}`)}
                 variant="primary"

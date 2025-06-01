@@ -1,5 +1,5 @@
-import { Card, Form, Button, Alert } from "react-bootstrap";
 import { useState, useContext } from "react";
+import { Form, Button, Alert } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 
@@ -11,58 +11,51 @@ export default function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const success = await login(nim, password);
-    if (!success) {
-      setError("NIM atau Password salah!");
+    try {
+      await login(nim, password);
+    } catch (err) {
+      setError(err.response?.data?.message || "Terjadi kesalahan");
     }
   };
 
   return (
-    <div className="d-flex justify-content-center align-items-center vh-100">
-      <Card
-        style={{ width: "400px", backgroundColor: "white" }}
-        className="p-3 border-0 auth-card"
-      >
-        <Card.Body>
-          <h3 className="text-center mb-4 fw-semibold text-primary">
-            Masuk KerKomKuy
-          </h3>
-          {error && <Alert variant="danger">{error}</Alert>}
-          <Form onSubmit={handleSubmit}>
-            <Form.Group className="mb-3">
-              <Form.Label>NIM</Form.Label>
-              <Form.Control
-                type="text"
-                value={nim}
-                onChange={(e) => setNim(e.target.value)}
-                placeholder="Masukkan NIM"
-                required
-                className="py-2"
-              />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Password</Form.Label>
-              <Form.Control
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Masukkan Password"
-                required
-                className="py-2"
-              />
-            </Form.Group>
-            <Button variant="primary" type="submit" className="w-100 py-2">
+    <div className="auth-page">
+      <div className="auth-card">
+        <h2 className="auth-title">Login KerKomKuy</h2>
+        {error && <Alert variant="danger">{error}</Alert>}
+        <Form onSubmit={handleSubmit}>
+          <Form.Group className="mb-3">
+            <Form.Label>NIM</Form.Label>
+            <Form.Control
+              type="text"
+              value={nim}
+              onChange={(e) => setNim(e.target.value)}
+              placeholder="Masukkan NIM"
+              required
+            />
+          </Form.Group>
+
+          <Form.Group className="mb-4">
+            <Form.Label>Password</Form.Label>
+            <Form.Control
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Masukkan password"
+              required
+            />
+          </Form.Group>
+
+          <div className="d-grid gap-2">
+            <Button variant="primary" type="submit" className="mb-3">
               Login
             </Button>
-          </Form>
-
-          <div className="text-center mt-3">
-            <small>
-              Belum punya akun? <Link to="/register">Daftar di sini</Link>
-            </small>
+            <div className="text-center">
+              Belum punya akun? <Link to="/register">Register sekarang</Link>
+            </div>
           </div>
-        </Card.Body>
-      </Card>
+        </Form>
+      </div>
     </div>
   );
 }
