@@ -15,17 +15,21 @@ export default function AppNavbar() {
     const fetchPending = async () => {
       try {
         const response = await getAjakanMasuk(user.id);
+        // Hanya hitung ajakan dengan status 'pending'
         const pendingAjakan = response.data.filter(
-          (a) => a.status === "pending"
+          (ajakan) => ajakan.status === "pending"
         );
         setPendingCount(pendingAjakan.length);
       } catch (error) {
-        console.error("Gagal mengambil data ajakan:", error);
+        console.error("Error fetching pending invitations:", error);
+        setPendingCount(0);
       }
     };
 
     fetchPending();
-    const interval = setInterval(fetchPending, 10000); // Optional refresh tiap 10 detik
+    // Set interval untuk memperbarui setiap 30 detik
+    const interval = setInterval(fetchPending, 30000);
+
     return () => clearInterval(interval);
   }, [user?.id]);
 
