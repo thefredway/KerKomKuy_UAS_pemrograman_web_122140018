@@ -51,17 +51,25 @@ def get_grups_by_user(request):
     if not user:
         raise HTTPNotFound(json_body={"message": "User tidak ditemukan"})
 
-    grups = session.query(Grup).filter(
-        (Grup.admin_id == user.id) |
-        (Grup.id.in_(session.query(grup_anggota.c.grup_id).filter_by(user_id=user.id)))
-    ).all()
+    # 1. Grup di mana user adalah admin
+    grup_admin = session.query(Grup).filter(Grup.admin_id == user.id).all()
+
+    # 2. Grup di mana user menerima ajakan
+    accepted_grup_ids = session.query(Ajakan.grup_id).filter_by(
+        ke_user_id=user.id, status="accepted"
+    ).subquery()
+
+    grup_diterima = session.query(Grup).filter(Grup.id.in_(accepted_grup_ids)).all()
+
+    # Gabungkan dan hilangkan duplikat
+    all_grups = {g.id: g for g in (grup_admin + grup_diterima)}.values()
 
     return [{
         "id": g.id,
         "admin_id": g.admin_id,
         "anggota": [{"id": a.id, "nim": a.nim, "nama_lengkap": a.nama_lengkap} for a in g.anggota],
         "jadwal": g.jadwal or []
-    } for g in grups]
+    } for g in all_grups]
 
 # ---------------------------
 # GET: Ambil detail grup berdasarkan ID
