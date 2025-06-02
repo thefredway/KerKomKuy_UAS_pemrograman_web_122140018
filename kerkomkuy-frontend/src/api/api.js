@@ -55,7 +55,8 @@ export const updateAjakanStatus = (id, status) =>
 // ==============================
 // 💬 CHAT
 // ==============================
-export const kirimChat = (data) => api.post("/chat", data);
+export const kirimChat = (grupId, data) =>
+  api.post(`/chat?grup_id=${grupId}`, data);
 export const getChatByGrup = (grupId) => api.get(`/chat?grup_id=${grupId}`);
 
 // ==============================
