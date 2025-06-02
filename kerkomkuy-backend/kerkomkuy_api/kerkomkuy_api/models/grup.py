@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, ForeignKey, Table
+from sqlalchemy import Column, Integer, ForeignKey, Table, JSON
 from sqlalchemy.orm import relationship
 from .meta import Base
 
@@ -16,6 +16,8 @@ class Grup(Base):
     id = Column(Integer, primary_key=True)
     admin_id = Column(Integer, ForeignKey('users.id'), nullable=False)
 
+    jadwal = Column(JSON, nullable=True)
+                    
     # Relasi many-to-many dengan User
     anggota = relationship("User", secondary=grup_anggota, backref="grup_anggota")
 
