@@ -2,7 +2,7 @@ import { useEffect, useState, useContext } from "react";
 import { Card, Button } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
-import { getGrupByUser } from "../api/api";
+import { getGrupByUser, deleteGrup } from "../api/api";
 
 export default function ListGrup() {
   const [grupList, setGrupList] = useState([]);
@@ -11,16 +11,19 @@ export default function ListGrup() {
 
   useEffect(() => {
     let intervalId;
+
     const fetchGrupList = async () => {
       try {
         const res = await getGrupByUser(user.nim);
         const groups = res.data || [];
-        // Sort groups to show groups where user is admin first
+
+        // Prioritaskan grup di mana user adalah admin
         groups.sort((a, b) => {
           const isAdminA = a.admin_id === user.id;
           const isAdminB = b.admin_id === user.id;
           return isAdminB - isAdminA;
         });
+
         setGrupList(groups);
       } catch (err) {
         console.error("Error fetching groups:", err);
@@ -29,41 +32,29 @@ export default function ListGrup() {
 
     if (user) {
       fetchGrupList();
-      // Poll for updates every 10 seconds
       intervalId = setInterval(fetchGrupList, 10000);
     }
 
     return () => clearInterval(intervalId);
   }, [user]);
 
-  const debugStorage = () => {
-    console.log("All Groups:", grupList);
-    console.log("Current User:", user);
-  };
+  const handleDeleteGrup = async (grupId) => {
+    const confirm = window.confirm("Yakin ingin menghapus grup ini?");
+    if (!confirm) return;
 
-  const resetGrups = () => {
-    if (window.confirm("Atur ulang semua data grup?")) {
-      setGrupList([]);
+    try {
+      await deleteGrup(grupId);
+      setGrupList((prev) => prev.filter((g) => g.id !== grupId));
+    } catch (err) {
+      console.error("Gagal menghapus grup:", err);
+      alert("Terjadi kesalahan saat menghapus grup.");
     }
   };
 
   return (
     <div className="p-4">
-      <div className="d-flex justify-content-between align-items-center mb-3">
+      <div className="mb-3">
         <h3>Daftar Grup Saya</h3>
-        <div>
-          <Button
-            size="sm"
-            variant="outline-secondary"
-            onClick={debugStorage}
-            className="me-2"
-          >
-            Debug
-          </Button>
-          <Button size="sm" variant="outline-danger" onClick={resetGrups}>
-            Reset
-          </Button>
-        </div>
       </div>
 
       {grupList.length === 0 ? (
@@ -78,6 +69,7 @@ export default function ListGrup() {
                   <span className="badge bg-primary">Admin</span>
                 )}
               </Card.Title>
+
               <p>
                 <strong>Anggota:</strong>{" "}
                 {grup.anggota && grup.anggota.length > 0
@@ -87,12 +79,24 @@ export default function ListGrup() {
               <p>
                 <strong>Jumlah Anggota:</strong> {grup.anggota?.length || 0}
               </p>
-              <Button
-                onClick={() => navigate(`/grup/${grup.id}`)}
-                variant="primary"
-              >
-                Masuk Grup
-              </Button>
+
+              <div className="d-flex gap-2">
+                <Button
+                  onClick={() => navigate(`/grup/${grup.id}`)}
+                  variant="primary"
+                >
+                  Masuk Grup
+                </Button>
+
+                {grup.admin_id === user.id && (
+                  <Button
+                    variant="danger"
+                    onClick={() => handleDeleteGrup(grup.id)}
+                  >
+                    Hapus Grup
+                  </Button>
+                )}
+              </div>
             </Card.Body>
           </Card>
         ))
